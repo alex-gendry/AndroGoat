@@ -2,10 +2,10 @@ name: Fortify Security Scan
 on:
   workflow_dispatch:
   push:
-#    # Master or main branch that you want to trigger this workflow for
-   branches:
+    #    # Master or main branch that you want to trigger this workflow for
+    branches:
   pull_request:
-    # The branches below must be a subset of the branches above
+  # The branches below must be a subset of the branches above
 
 jobs:
   Fortif-SAST:
@@ -25,12 +25,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
-          distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Install zip
+        run: |
+          apt update
+          apt install zip -y
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       # Set up Fortify ScanCentral Client
       - name: Download Fortify Clients
@@ -42,6 +52,7 @@ jobs:
       - name: Install FCLI
         run: |
           wget -qO- https://github.com/fortify/fcli/releases/download/v2.0.0/fcli-linux.tgz | tar zxf -
+
 
       # Run SAST Scan
       - name: Fortify SAST Scan
@@ -63,7 +74,7 @@ jobs:
           sast_build_options: ""
           security_gate_action: fail
           security_gate_filterset: New C&H
-            #          summary_filterset: Critical & High
+          #          summary_filterset: Critical & High
           gha_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Export Fortify vulnerability data
